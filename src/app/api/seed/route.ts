@@ -16,9 +16,10 @@ export async function GET() {
       },
     });
 
-    // Departments
+    // Departments (no unique constraint on name — use createMany with skipDuplicates not available for non-unique, so check first)
     for (const name of ["Engineering","Human Resources","Finance","Marketing","Sales","Operations","Legal","Product","Design","Support"]) {
-      await prisma.department.upsert({ where: { name }, update: {}, create: { name, description: `${name} department` } });
+      const exists = await prisma.department.findFirst({ where: { name, companyId: null } });
+      if (!exists) await prisma.department.create({ data: { name, description: `${name} department` } });
     }
 
     // Employees
