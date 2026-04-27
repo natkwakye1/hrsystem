@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
       where: { email: email.toLowerCase().trim() },
     });
 
-    if (!user) {
+    if (!user || user.role !== "admin") {
       return NextResponse.json(
         { error: "Invalid email or password." },
         { status: 401 }

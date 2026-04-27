@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
@@ -252,6 +252,11 @@ export default function EmployeesPage() {
       const data = await res.json();
       if (!res.ok) { setFormError(data.error || "Failed to create employee."); return; }
       setCreatedId(data.id);
+      // Show assigned email if auto-generated
+      if (data.assignedEmail && data.assignedEmail !== personal.email) {
+        setFormError(`✓ Employee email set to: ${data.assignedEmail}. Credentials sent!`);
+        setTimeout(() => setFormError(""), 5000);
+      }
       setStep(2);
     } catch { setFormError("Network error. Please try again."); }
     finally  { setSubmitting(false); }
@@ -463,38 +468,42 @@ export default function EmployeesPage() {
         </div>
 
         {/* ── Pagination ── */}
-        {totalPages > 1 && !loading && (
-          <div style={{ display:"flex", flexWrap:"wrap", alignItems:"center", justifyContent:"space-between", gap:12 }}>
-            <p style={{ fontSize:12, color:"var(--text-secondary)", margin:0 }}>Showing {startEntry}–{endEntry} of {total} employees</p>
-            <div style={{ display:"flex", alignItems:"center", gap:4 }}>
-              <button className="pg-btn" onClick={() => setPage(p => Math.max(1,p-1))} disabled={page===1}
-                style={{ width:32, height:32, borderRadius:8, border:"0.5px solid var(--border)", background:"var(--bg-card)", color:page===1?"var(--text-muted)":"var(--text-primary)", cursor:page===1?"not-allowed":"pointer", opacity:page===1?0.5:1, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                <ChevronLeft size={14} />
-              </button>
-              {(() => {
-                const pages: (number|"...")[] = [];
-                if (totalPages<=5) { for (let i=1;i<=totalPages;i++) pages.push(i); }
-                else {
-                  pages.push(1);
-                  if (page>3) pages.push("...");
-                  for (let i=Math.max(2,page-1);i<=Math.min(totalPages-1,page+1);i++) pages.push(i);
-                  if (page<totalPages-2) pages.push("...");
-                  pages.push(totalPages);
-                }
-                return pages.map((p,i) => p==="..." ? (
-                  <span key={`d${i}`} style={{ width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, color:"var(--text-muted)" }}>…</span>
-                ) : (
-                  <button key={p} className="pg-btn" onClick={() => setPage(p as number)}
-                    style={{ width:32, height:32, borderRadius:8, border:page===p?`0.5px solid ${BLUE[400]}`:"0.5px solid transparent", background:page===p?BLUE[50]:"transparent", color:page===p?BLUE[600]:"var(--text-secondary)", fontSize:12, fontWeight:page===p?600:400, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                    {p}
-                  </button>
-                ));
-              })()}
-              <button className="pg-btn" onClick={() => setPage(p => Math.min(totalPages,p+1))} disabled={page===totalPages}
-                style={{ width:32, height:32, borderRadius:8, border:"0.5px solid var(--border)", background:"var(--bg-card)", color:page===totalPages?"var(--text-muted)":"var(--text-primary)", cursor:page===totalPages?"not-allowed":"pointer", opacity:page===totalPages?0.5:1, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                <ChevronRight size={14} />
-              </button>
-            </div>
+        {!loading && total > 0 && (
+          <div style={{ ...cardBase, padding:"10px 16px", display:"flex", flexWrap:"wrap", alignItems:"center", justifyContent:"space-between", gap:12 }}>
+            <p style={{ fontSize:12, color:"var(--text-secondary)", margin:0 }}>
+              Showing <strong style={{ color:"var(--text-primary)" }}>{startEntry}–{endEntry}</strong> of <strong style={{ color:"var(--text-primary)" }}>{total}</strong> employee{total !== 1 ? "s" : ""}
+            </p>
+            {totalPages > 1 && (
+              <div style={{ display:"flex", alignItems:"center", gap:4 }}>
+                <button className="pg-btn" onClick={() => setPage(p => Math.max(1,p-1))} disabled={page===1}
+                  style={{ width:32, height:32, borderRadius:8, border:"0.5px solid var(--border)", background:"var(--bg-card)", color:page===1?"var(--text-muted)":"var(--text-primary)", cursor:page===1?"not-allowed":"pointer", opacity:page===1?0.5:1, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <ChevronLeft size={14} />
+                </button>
+                {(() => {
+                  const pages: (number|"...")[] = [];
+                  if (totalPages<=5) { for (let i=1;i<=totalPages;i++) pages.push(i); }
+                  else {
+                    pages.push(1);
+                    if (page>3) pages.push("...");
+                    for (let i=Math.max(2,page-1);i<=Math.min(totalPages-1,page+1);i++) pages.push(i);
+                    if (page<totalPages-2) pages.push("...");
+                    pages.push(totalPages);
+                  }
+                  return pages.map((p,i) => p==="..." ? (
+                    <span key={`d${i}`} style={{ width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, color:"var(--text-muted)" }}>…</span>
+                  ) : (
+                    <button key={p} className="pg-btn" onClick={() => setPage(p as number)}
+                      style={{ width:32, height:32, borderRadius:8, border:page===p?`0.5px solid ${BLUE[400]}`:"0.5px solid transparent", background:page===p?BLUE[50]:"transparent", color:page===p?BLUE[600]:"var(--text-secondary)", fontSize:12, fontWeight:page===p?600:400, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                      {p}
+                    </button>
+                  ));
+                })()}
+                <button className="pg-btn" onClick={() => setPage(p => Math.min(totalPages,p+1))} disabled={page===totalPages}
+                  style={{ width:32, height:32, borderRadius:8, border:"0.5px solid var(--border)", background:"var(--bg-card)", color:page===totalPages?"var(--text-muted)":"var(--text-primary)", cursor:page===totalPages?"not-allowed":"pointer", opacity:page===totalPages?0.5:1, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <ChevronRight size={14} />
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -776,11 +785,11 @@ export default function EmployeesPage() {
             )}
 
             {/* Success preview */}
-            <div style={{ padding:"14px 16px", borderRadius:10, background:"#f0fdf4", border:"1px solid #bbf7d0", display:"flex", alignItems:"center", gap:12 }}>
-              <CheckCircle2 size={18} style={{ color:"#16a34a", flexShrink:0 }} />
+            <div style={{ padding:"14px 16px", borderRadius:10, background:"#eff6ff", border:"1px solid #bfdbfe", display:"flex", alignItems:"center", gap:12 }}>
+              <CheckCircle2 size={18} style={{ color:"#2563eb", flexShrink:0 }} />
               <div>
-                <p style={{ fontSize:12, fontWeight:600, color:"#15803d", margin:"0 0 1px" }}>Almost done!</p>
-                <p style={{ fontSize:11, color:"#16a34a", margin:0 }}>
+                <p style={{ fontSize:12, fontWeight:600, color:"#1d4ed8", margin:"0 0 1px" }}>Almost done!</p>
+                <p style={{ fontSize:11, color:"#2563eb", margin:0 }}>
                   Employee record created. {document.skip ? "Click Finish to complete." : "Add a document and click Finish."}
                 </p>
               </div>
@@ -790,7 +799,7 @@ export default function EmployeesPage() {
               <button type="button" onClick={() => setStep(3)} style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"9px 16px", borderRadius:8, border:"0.5px solid var(--border)", background:"var(--bg-hover)", color:"var(--text-secondary)", fontSize:12, fontWeight:500, cursor:"pointer" }}>
                 <ChevronLeft size={13} /> Back
               </button>
-              <button type="submit" disabled={submitting} style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"9px 20px", borderRadius:8, border:"none", background:"#16a34a", color:"#fff", fontSize:12, fontWeight:600, cursor:"pointer", opacity:submitting?0.7:1 }}>
+              <button type="submit" disabled={submitting} style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"9px 20px", borderRadius:8, border:"none", background:"#2563eb", color:"#fff", fontSize:12, fontWeight:600, cursor:"pointer", opacity:submitting?0.7:1 }}>
                 {submitting ? <Loader2 size={13} style={{ animation:"spin 1s linear infinite" }} /> : <CheckCircle2 size={13} />}
                 {submitting ? "Saving…" : "Finish & Add Employee"}
               </button>

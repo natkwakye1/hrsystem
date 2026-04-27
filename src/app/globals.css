@@ -1,4 +1,4 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 
 @theme inline {
   --font-sans: "Inter", system-ui, -apple-system, sans-serif;
@@ -23,7 +23,7 @@ html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
   --accent: #2563eb;
   --accent-light: #eff6ff;
   --accent-hover: #1d4ed8;
-  --success: #10b981;
+  --success: #3b82f6;
   --success-light: #ecfdf5;
   --warning: #f59e0b;
   --warning-light: #fffbeb;
@@ -145,4 +145,93 @@ input[type="checkbox"] { accent-color: var(--accent); }
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: 8px;
+}
+.skeleton-shiny {
+  background: linear-gradient(90deg, var(--border) 0%, var(--bg-hover) 40%, var(--border) 60%, var(--border) 100%);
+  background-size: 300% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+/* ── Landing page nav (theme-aware frosted glass) ── */
+.landing-nav { background: rgba(255,255,255,0.88); }
+.dark .landing-nav { background: rgba(15,23,42,0.92); }
+
+/* ── Scroll-triggered animations ── */
+.anim {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.7s cubic-bezier(.4,0,.2,1), transform 0.7s cubic-bezier(.4,0,.2,1);
+}
+.anim.anim-in { opacity: 1; transform: translateY(0); }
+.anim-left { opacity: 0; transform: translateX(-32px); transition: opacity 0.7s cubic-bezier(.4,0,.2,1), transform 0.7s cubic-bezier(.4,0,.2,1); }
+.anim-left.anim-in { opacity: 1; transform: translateX(0); }
+.anim-scale { opacity: 0; transform: scale(0.92); transition: opacity 0.6s cubic-bezier(.4,0,.2,1), transform 0.6s cubic-bezier(.4,0,.2,1); }
+.anim-scale.anim-in { opacity: 1; transform: scale(1); }
+.anim-d1 { transition-delay: 0.07s; }
+.anim-d2 { transition-delay: 0.14s; }
+.anim-d3 { transition-delay: 0.21s; }
+.anim-d4 { transition-delay: 0.28s; }
+.anim-d5 { transition-delay: 0.35s; }
+.anim-d6 { transition-delay: 0.42s; }
+
+/* ── Hero entrance (fires on page load) ── */
+@keyframes heroUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes heroFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.hero-a1 { animation: heroUp 0.75s cubic-bezier(.4,0,.2,1) both; animation-delay: 0.05s; }
+.hero-a2 { animation: heroUp 0.75s cubic-bezier(.4,0,.2,1) both; animation-delay: 0.15s; }
+.hero-a3 { animation: heroUp 0.75s cubic-bezier(.4,0,.2,1) both; animation-delay: 0.25s; }
+.hero-a4 { animation: heroUp 0.75s cubic-bezier(.4,0,.2,1) both; animation-delay: 0.35s; }
+.hero-a5 { animation: heroFade 1s ease both; animation-delay: 0.5s; }
+
+/* ── Floating / subtle motion ── */
+@keyframes floatY {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes floatYSlow {
+  0%,100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-14px) rotate(1deg); }
+}
+.float-card { animation: floatY 4s ease-in-out infinite; }
+.float-card-slow { animation: floatYSlow 6s ease-in-out infinite; }
+
+/* ── Hover lift ── */
+.hover-lift { transition: transform 0.22s cubic-bezier(.4,0,.2,1), box-shadow 0.22s; }
+.hover-lift:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(37,99,235,0.12); }
+
+/* ── Portal card glow ── */
+@keyframes cardGlow {
+  0%,100% { box-shadow: 0 0 0 0 rgba(37,99,235,0.0); }
+  50% { box-shadow: 0 0 28px 4px rgba(37,99,235,0.12); }
+}
+
+/* ── Landing responsive ── */
+@media (max-width: 900px) {
+  .landing-hero-grid { grid-template-columns: 1fr !important; }
+  .landing-hero-right { display: none !important; }
+  .landing-4col { grid-template-columns: repeat(2,1fr) !important; }
+  .landing-3col { grid-template-columns: repeat(2,1fr) !important; }
+  .landing-6col { grid-template-columns: repeat(3,1fr) !important; }
+  .landing-steps { grid-template-columns: repeat(2,1fr) !important; }
+  .landing-why { grid-template-columns: 1fr !important; }
+}
+@media (max-width: 640px) {
+  .landing-nav-links { display: none !important; }
+  .landing-nav-actions .sign-in-btn { display: none !important; }
+  .landing-3col { grid-template-columns: 1fr !important; }
+  .landing-4col { grid-template-columns: 1fr !important; }
+  .landing-6col { grid-template-columns: repeat(2,1fr) !important; }
+  .landing-steps { grid-template-columns: 1fr !important; }
+  .landing-hero-h1 { font-size: 40px !important; }
+  .landing-footer-grid { grid-template-columns: 1fr !important; }
+}
+@media (max-width: 400px) {
+  .landing-6col { grid-template-columns: 1fr !important; }
 }

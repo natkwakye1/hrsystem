@@ -18,14 +18,18 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
     try {
-      const res = await fetch("/api/auth/login", {
+      const res = await fetch("/api/auth/unified-login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Invalid credentials."); setLoading(false); return; }
-      router.push("/dashboard");
+
+      if (data.role === "admin")         router.push("/dashboard");
+      else if (data.role === "finance")  router.push("/finance");
+      else if (data.role === "employee") router.push("/employee-portal");
+      else router.push("/dashboard");
     } catch {
       setError("Something went wrong. Please try again.");
       setLoading(false);
@@ -61,7 +65,9 @@ export default function LoginPage() {
       <div style={{ backgroundColor: "var(--bg-card)", borderRadius: 16, boxShadow: "var(--shadow-card)", padding: "28px 32px", border: "1px solid var(--border)" }}>
         <div style={{ marginBottom: 28 }}>
           <h2 style={{ fontSize: 22, fontWeight: 700, color: "var(--text-primary)", marginBottom: 4 }}>Sign In</h2>
-          <p style={{ color: "var(--text-secondary)", fontSize: 13 }}>Enter your credentials to access the dashboard</p>
+          <p style={{ color: "var(--text-secondary)", fontSize: 13 }}>
+            Enter your credentials — you will be taken to the right portal automatically.
+          </p>
         </div>
 
         {error && (
@@ -75,7 +81,7 @@ export default function LoginPage() {
             <label style={labelStyle}>Email</label>
             <div style={{ position: "relative" }}>
               <div style={iconWrap}><Mail size={17} /></div>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="admin@hrsystem.com" required style={inputStyle} />
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@company.com" required style={inputStyle} />
             </div>
           </div>
 
@@ -95,9 +101,6 @@ export default function LoginPage() {
               <input type="checkbox" style={{ width: 15, height: 15, cursor: "pointer" }} />
               Keep me logged in
             </label>
-            <button type="button" style={{ fontSize: 13, fontWeight: 600, color: "var(--accent)", background: "none", border: "none", cursor: "pointer" }}>
-              Forgot password?
-            </button>
           </div>
 
           <button type="submit" disabled={loading} style={{
@@ -116,13 +119,13 @@ export default function LoginPage() {
         </form>
 
         <p style={{ marginTop: 20, textAlign: "center", fontSize: 13, color: "var(--text-secondary)" }}>
-          Don&apos;t have an account?{" "}
-          <Link href="/register" style={{ fontWeight: 600, color: "var(--accent)", textDecoration: "none" }}>Create account</Link>
+          New company?{" "}
+          <Link href="/onboarding" style={{ fontWeight: 600, color: "var(--accent)", textDecoration: "none" }}>Set up your workspace</Link>
         </p>
       </div>
 
       <p style={{ marginTop: 20, textAlign: "center", fontSize: 11, color: "var(--text-muted)" }}>
-        NeraAdmin v1.0 - Human Capital Management & Payroll System
+        NeraAdmin v1.0 - Human Capital Management &amp; Payroll System
       </p>
     </div>
   );

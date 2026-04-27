@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import {
   Users, Wallet, CalendarDays, Briefcase, BarChart3, Shield,
@@ -107,28 +108,181 @@ function SectionHeading({ eyebrow, title, sub, center }: { eyebrow: string; titl
 export default function LandingPage() {
   const { theme, toggle } = useTheme();
 
+  useEffect(() => {
+    /* Observe every element that carries an animation class.
+       .anim-scale elements may also carry .anim — dedup via Set. */
+    const els = document.querySelectorAll<Element>(".anim, .anim-left, .anim-scale");
+    const seen = new Set<Element>();
+    const animObs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add("anim-in");
+          animObs.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.07, rootMargin: "0px 0px -40px 0px" });
+    els.forEach(el => { if (!seen.has(el)) { seen.add(el); animObs.observe(el); } });
+
+    const sections = ["features", "how", "team", "testimonials"];
+    const sectionEls = sections.map(id => document.getElementById(id)).filter(Boolean) as HTMLElement[];
+    const links = document.querySelectorAll<HTMLAnchorElement>(".landing-link[data-spy]");
+
+    const spyObs = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const id = entry.target.id;
+        const link = document.querySelector<HTMLAnchorElement>(`.landing-link[data-spy="${id}"]`);
+        if (!link) return;
+        if (entry.isIntersecting) {
+          links.forEach(l => l.classList.remove("nav-active"));
+          link.classList.add("nav-active");
+        }
+      });
+    }, { threshold: 0.3 });
+    sectionEls.forEach(el => spyObs.observe(el));
+
+    return () => { animObs.disconnect(); spyObs.disconnect(); };
+  }, []);
+
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg-body)", color: "var(--text-primary)", fontFamily: "'DM Sans', sans-serif", overflowX: "hidden" }}>
 
       {/* ══════════════════════════════════
           NAVIGATION
       ══════════════════════════════════ */}
-      <header style={{ position: "sticky", top: 0, zIndex: 100, borderBottom: "0.5px solid var(--border)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", background: "rgba(255,255,255,0.88)" }}>
-        <nav style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 40px", maxWidth: 1260, margin: "0 auto" }}>
-          {/* Logo */}
-          <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-            <div style={{ width: 34, height: 34, borderRadius: 9, background: BLUE[600], display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ color: "#fff", fontWeight: 700, fontSize: 14, letterSpacing: -0.5 }}>N</span>
-            </div>
-            <span style={{ fontSize: 17, fontWeight: 700, color: "var(--text-primary)", letterSpacing: -0.5 }}>NeraAdmin</span>
-          </div>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
 
-          {/* Nav links */}
-          <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+        /* ── Orbs ── */
+        @keyframes orb-drift-a { 0%,100%{transform:translate(0,0) scale(1)} 40%{transform:translate(80px,-60px) scale(1.1)} 70%{transform:translate(-40px,40px) scale(0.95)} }
+        @keyframes orb-drift-b { 0%,100%{transform:translate(0,0)} 35%{transform:translate(-60px,50px)} 65%{transform:translate(50px,-30px)} }
+
+        /* ── Nav ── */
+        .landing-link { border-radius:8px; transition: background 0.15s, color 0.15s; }
+        .landing-link:hover { background: var(--bg-hover) !important; color: var(--text-primary) !important; }
+        .landing-link.nav-active { color: #2563eb !important; font-weight: 600 !important; }
+        .nav-cta-btn { transition: opacity 0.15s, transform 0.15s; }
+        .nav-cta-btn:hover { opacity: 0.88 !important; transform: translateY(-1px); }
+        .nav-sign-in { transition: background 0.15s, color 0.15s; }
+        .nav-sign-in:hover { background: var(--bg-hover) !important; color: var(--text-primary) !important; }
+        .nav-theme-btn { transition: background 0.15s, color 0.15s; }
+        .nav-theme-btn:hover { background: var(--bg-hover) !important; color: var(--text-primary) !important; }
+
+        /* ── Card hover lift ── */
+        .hover-lift { transition: transform 0.22s cubic-bezier(0.16,1,0.3,1), box-shadow 0.22s; }
+        .hover-lift:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(30,58,138,0.10); }
+
+        /* ══════════════════════════
+           HERO ENTRANCE ANIMATIONS
+        ══════════════════════════ */
+        @keyframes hero-badge  { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes hero-h1     { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes hero-para   { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes hero-btns   { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes hero-right  { from{opacity:0;transform:translateX(44px) scale(0.96)} to{opacity:1;transform:translateX(0) scale(1)} }
+
+        .hero-a1 { animation: hero-badge 0.55s cubic-bezier(0.16,1,0.3,1) 0.10s both; }
+        .hero-a2 { animation: hero-h1    0.65s cubic-bezier(0.16,1,0.3,1) 0.22s both; }
+        .hero-a3 { animation: hero-para  0.60s cubic-bezier(0.16,1,0.3,1) 0.38s both; }
+        .hero-a4 { animation: hero-btns  0.55s cubic-bezier(0.16,1,0.3,1) 0.52s both; }
+        .hero-a5 { animation: hero-right 0.80s cubic-bezier(0.16,1,0.3,1) 0.14s both; }
+
+        /* ── Floating hero cards ── */
+        @keyframes float-a { 0%,100%{transform:translateY(0px)}  50%{transform:translateY(-11px)} }
+        @keyframes float-b { 0%,100%{transform:translateY(0px)}  50%{transform:translateY(-8px)}  }
+        .float-card      { animation: float-a 4.2s ease-in-out 1.4s infinite; }
+        .float-card-slow { animation: float-b 5.4s ease-in-out 0.9s infinite; }
+
+        /* ══════════════════════════
+           SCROLL-TRIGGERED ANIMATIONS
+           IntersectionObserver adds .anim-in when element enters viewport
+        ══════════════════════════ */
+
+        /* Slide up (default) */
+        .anim {
+          opacity: 0;
+          transform: translateY(30px);
+          transition: opacity 0.62s cubic-bezier(0.16,1,0.3,1),
+                      transform 0.62s cubic-bezier(0.16,1,0.3,1);
+        }
+        /* Slide from left */
+        .anim-left {
+          opacity: 0;
+          transform: translateX(-34px);
+          transition: opacity 0.62s cubic-bezier(0.16,1,0.3,1),
+                      transform 0.62s cubic-bezier(0.16,1,0.3,1);
+        }
+        /* Scale up */
+        .anim-scale {
+          opacity: 0;
+          transform: scale(0.93);
+          transition: opacity 0.60s cubic-bezier(0.16,1,0.3,1),
+                      transform 0.60s cubic-bezier(0.16,1,0.3,1);
+        }
+        /* Revealed state */
+        .anim.anim-in,
+        .anim-left.anim-in,
+        .anim-scale.anim-in {
+          opacity: 1;
+          transform: none;
+        }
+
+        /* Staggered delays for grid children */
+        .anim-d1 { transition-delay: 0.04s; }
+        .anim-d2 { transition-delay: 0.11s; }
+        .anim-d3 { transition-delay: 0.18s; }
+        .anim-d4 { transition-delay: 0.25s; }
+        .anim-d5 { transition-delay: 0.32s; }
+        .anim-d6 { transition-delay: 0.39s; }
+      `}</style>
+
+      {/* Background animated orbs */}
+      <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0, overflow: "hidden" }}>
+        <div style={{ position: "absolute", top: "5%", left: "10%", width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle, rgba(37,99,235,0.07) 0%, transparent 70%)", animation: "orb-drift-a 20s ease-in-out infinite" }} />
+        <div style={{ position: "absolute", bottom: "5%", right: "10%", width: 700, height: 700, borderRadius: "50%", background: "radial-gradient(circle, rgba(99,102,241,0.05) 0%, transparent 70%)", animation: "orb-drift-b 26s ease-in-out infinite" }} />
+      </div>
+
+      <header style={{
+        position: "sticky", top: 0, zIndex: 100,
+        backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)",
+        background: theme === "dark" ? "rgba(8,12,24,0.92)" : "rgba(255,255,255,0.94)",
+        borderBottom: "1px solid var(--border)",
+      }}>
+        <nav style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 5%", width: "100%", height: 64, boxSizing: "border-box" }}>
+
+          {/* Logo — stacked like Elite Drive Motors */}
+          <Link href="/" style={{ display: "flex", alignItems: "center", gap: 11, textDecoration: "none", flexShrink: 0 }}>
+            <div style={{
+              width: 38, height: 38, borderRadius: 11,
+              background: `linear-gradient(145deg, ${BLUE[900]}, ${BLUE[600]})`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              boxShadow: `0 3px 14px rgba(30,58,138,0.40)`,
+              flexShrink: 0,
+            }}>
+              <Users size={17} color="#fff" strokeWidth={2.2} />
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 0, lineHeight: 1 }}>
+              <span style={{ fontSize: 13, fontWeight: 800, color: "var(--text-primary)", letterSpacing: 2, textTransform: "uppercase" }}>Nera</span>
+              <span style={{ fontSize: 9, fontWeight: 600, color: "var(--text-muted)", letterSpacing: 3, textTransform: "uppercase", marginTop: 2 }}>Admin</span>
+            </div>
+          </Link>
+
+          {/* Nav links — center */}
+          <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
             {navLinks.map(link => (
-              <a key={link.label} href={link.href} style={{ padding: "6px 14px", borderRadius: 7, fontSize: 13, fontWeight: 500, color: "var(--text-secondary)", textDecoration: "none", transition: "color 0.18s, background 0.18s" }}
-                onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = "var(--text-primary)"; (e.currentTarget as HTMLAnchorElement).style.background = "var(--bg-card)"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = "var(--text-secondary)"; (e.currentTarget as HTMLAnchorElement).style.background = "transparent"; }}
+              <a
+                key={link.label}
+                href={link.href}
+                className="landing-link"
+                data-spy={link.href.replace("#", "")}
+                style={{
+                  padding: "7px 18px",
+                  fontSize: 13,
+                  fontWeight: 500,
+                  color: "var(--text-secondary)",
+                  textDecoration: "none",
+                  letterSpacing: 0.1,
+                  display: "block",
+                }}
               >
                 {link.label}
               </a>
@@ -136,15 +290,60 @@ export default function LandingPage() {
           </div>
 
           {/* Actions */}
-          <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-            <button onClick={toggle} style={{ width: 34, height: 34, borderRadius: 8, background: "var(--bg-card)", border: "0.5px solid var(--border)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-secondary)" }} title="Toggle theme">
-              {theme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
+          <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
+            <button
+              onClick={toggle}
+              className="nav-theme-btn"
+              title="Toggle theme"
+              style={{
+                width: 36, height: 36, borderRadius: 8,
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: "var(--text-muted)",
+              }}
+            >
+              {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
             </button>
-            <Link href="/login" style={{ padding: "7px 16px", borderRadius: 8, fontSize: 13, fontWeight: 500, color: "var(--text-primary)", textDecoration: "none", border: "0.5px solid var(--border)", background: "var(--bg-card)" }}>
-              Sign in
+
+            <Link
+              href="/login"
+              className="nav-sign-in"
+              style={{
+                padding: "7px 18px",
+                borderRadius: 8,
+                fontSize: 13,
+                fontWeight: 500,
+                color: "var(--text-secondary)",
+                textDecoration: "none",
+                background: "transparent",
+                letterSpacing: 0.1,
+                whiteSpace: "nowrap",
+              }}
+            >
+              Sign In
             </Link>
-            <Link href="/register" style={{ padding: "7px 16px", borderRadius: 8, fontSize: 13, fontWeight: 600, color: "#fff", textDecoration: "none", background: BLUE[600], display: "inline-flex", alignItems: "center", gap: 5 }}>
-              Get started <ChevronRight size={12} />
+
+            <Link
+              href="/onboarding"
+              className="nav-cta-btn"
+              style={{
+                padding: "9px 20px",
+                borderRadius: 8,
+                fontSize: 13,
+                fontWeight: 600,
+                textDecoration: "none",
+                background: theme === "dark" ? "#fff" : "#0f172a",
+                color: theme === "dark" ? "#0f172a" : "#fff",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                letterSpacing: 0.1,
+                whiteSpace: "nowrap",
+              }}
+            >
+              Get Started
             </Link>
           </div>
         </nav>
@@ -153,33 +352,36 @@ export default function LandingPage() {
       {/* ══════════════════════════════════
           HERO
       ══════════════════════════════════ */}
-      <section style={{ maxWidth: 1260, margin: "0 auto", padding: "80px 40px 64px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center" }}>
+      <section style={{ position: "relative", zIndex: 1, maxWidth: 1260, margin: "0 auto", padding: "80px 40px 64px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center" }} className="landing-hero-grid">
         {/* Left */}
         <div>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 12px", borderRadius: 20, background: BLUE[50], border: `0.5px solid ${BLUE[200]}`, fontSize: 11, fontWeight: 600, color: BLUE[600], marginBottom: 22 }}>
-            <Zap size={11} /> Human Capital Management System
+          <div className="hero-a1" style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "5px 14px 5px 8px", borderRadius: 24, background: `linear-gradient(135deg, ${BLUE[50]}, ${BLUE[100]})`, border: `1px solid ${BLUE[200]}`, fontSize: 11.5, fontWeight: 600, color: BLUE[700], marginBottom: 24, boxShadow: `0 2px 12px rgba(37,99,235,0.12)` }}>
+            <span style={{ width: 20, height: 20, borderRadius: "50%", background: BLUE[600], display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <Zap size={10} color="#fff" fill="#fff" />
+            </span>
+            Intelligent HR &amp; Payroll for Modern Teams
           </div>
-          <h1 style={{ fontSize: 52, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.1, marginBottom: 18, letterSpacing: -2 }}>
+          <h1 className="hero-a2 landing-hero-h1" style={{ fontSize: 52, fontWeight: 800, color: "var(--text-primary)", lineHeight: 1.1, marginBottom: 18, letterSpacing: -2 }}>
             Manage Your<br />
             <span style={{ color: BLUE[600] }}>Workforce</span><br />
             With Confidence
           </h1>
-          <p style={{ fontSize: 15, color: "var(--text-secondary)", lineHeight: 1.8, maxWidth: 440, marginBottom: 34 }}>
+          <p className="hero-a3" style={{ fontSize: 15, color: "var(--text-secondary)", lineHeight: 1.8, maxWidth: 440, marginBottom: 34 }}>
             A complete HR platform for employee management, payroll processing, leave tracking, recruitment, and real-time workforce analytics — all in one place.
           </p>
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 36 }}>
-            <Link href="/register" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "12px 26px", borderRadius: 10, fontSize: 14, fontWeight: 600, color: "#fff", textDecoration: "none", background: BLUE[600] }}>
-              Start free trial <ArrowRight size={14} />
+          <div className="hero-a4" style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 36 }}>
+            <Link href="/onboarding" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "12px 26px", borderRadius: 10, fontSize: 14, fontWeight: 600, color: "#fff", textDecoration: "none", background: BLUE[600] }}>
+              Get started <ArrowRight size={14} />
             </Link>
             <Link href="/login" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "12px 26px", borderRadius: 10, fontSize: 14, fontWeight: 500, color: "var(--text-primary)", textDecoration: "none", background: "var(--bg-card)", border: "0.5px solid var(--border)" }}>
               Sign in
             </Link>
           </div>
           {/* Social proof */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div className="hero-a4" style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{ display: "flex" }}>
               {["https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=60&q=80&fit=crop","https://images.unsplash.com/photo-1560250097-0b93528c311a?w=60&q=80&fit=crop","https://images.unsplash.com/photo-1580489944761-15a19d654956?w=60&q=80&fit=crop","https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=60&q=80&fit=crop"].map((src, i) => (
-                <img key={i} src={src} alt="user" style={{ width: 30, height: 30, borderRadius: "50%", objectFit: "cover", border: "2px solid #fff", marginLeft: i > 0 ? -8 : 0 }} />
+                <img key={i} src={src} alt="user" style={{ width: 30, height: 30, borderRadius: "50%", objectFit: "cover", border: "2px solid var(--bg-card)", marginLeft: i > 0 ? -8 : 0 }} />
               ))}
             </div>
             <div>
@@ -192,14 +394,14 @@ export default function LandingPage() {
         </div>
 
         {/* Right: hero visual */}
-        <div style={{ position: "relative", height: 440 }}>
+        <div className="hero-a5 landing-hero-right" style={{ position: "relative", height: 440 }}>
           {/* Main image */}
-          <div style={{ position: "absolute", top: 0, left: 40, right: 0, height: 310, borderRadius: 18, overflow: "hidden", border: `0.5px solid ${BLUE[100]}` }}>
+          <div style={{ position: "absolute", top: 0, left: 40, right: 0, height: 310, borderRadius: 18, overflow: "hidden", border: `0.5px solid ${BLUE[100]}`, boxShadow: "0 24px 64px rgba(37,99,235,0.12)" }}>
             <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=80&fit=crop" alt="Team collaborating" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             <div style={{ position: "absolute", inset: 0, background: `linear-gradient(135deg, ${BLUE[600]}22, transparent)` }} />
           </div>
           {/* Floating efficiency card */}
-          <div style={{ position: "absolute", bottom: 70, left: 0, background: "var(--bg-card)", border: "0.5px solid var(--border)", borderRadius: 12, padding: "12px 16px", display: "flex", alignItems: "center", gap: 12, minWidth: 180 }}>
+          <div className="float-card" style={{ position: "absolute", bottom: 70, left: 0, background: "var(--bg-card)", border: "0.5px solid var(--border)", borderRadius: 12, padding: "12px 16px", display: "flex", alignItems: "center", gap: 12, minWidth: 180, boxShadow: "0 8px 24px rgba(0,0,0,0.1)" }}>
             <div style={{ width: 36, height: 36, borderRadius: 9, background: BLUE[50], display: "flex", alignItems: "center", justifyContent: "center" }}>
               <TrendingUp size={16} style={{ color: BLUE[600] }} />
             </div>
@@ -209,7 +411,7 @@ export default function LandingPage() {
             </div>
           </div>
           {/* Floating employee count card */}
-          <div style={{ position: "absolute", bottom: 70, right: 0, background: "var(--bg-card)", border: "0.5px solid var(--border)", borderRadius: 12, padding: "12px 16px" }}>
+          <div className="float-card-slow" style={{ position: "absolute", bottom: 70, right: 0, background: "var(--bg-card)", border: "0.5px solid var(--border)", borderRadius: 12, padding: "12px 16px", boxShadow: "0 8px 24px rgba(0,0,0,0.1)" }}>
             <div style={{ display: "flex", marginBottom: 6 }}>
               {["https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=60&q=80&fit=crop","https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=60&q=80&fit=crop","https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=60&q=80&fit=crop"].map((src, i) => (
                 <img key={i} src={src} alt="team" style={{ width: 26, height: 26, borderRadius: "50%", objectFit: "cover", border: "2px solid var(--bg-card)", marginLeft: i > 0 ? -7 : 0 }} />
@@ -224,12 +426,12 @@ export default function LandingPage() {
       {/* ══════════════════════════════════
           STATS ROW
       ══════════════════════════════════ */}
-      <section style={{ maxWidth: 1260, margin: "0 auto", padding: "0 40px 72px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14 }}>
-          {stats.map(s => {
+      <section style={{ position: "relative", zIndex: 1, maxWidth: 1260, margin: "0 auto", padding: "0 40px 72px" }}>
+        <div className="landing-4col" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14 }}>
+          {stats.map((s, si) => {
             const Icon = s.icon;
             return (
-              <div key={s.label} style={{ padding: "22px 20px", borderRadius: 14, background: "var(--bg-card)", border: "0.5px solid var(--border)", display: "flex", alignItems: "center", gap: 14 }}>
+              <div key={s.label} className={`anim anim-d${si + 1} hover-lift`} style={{ padding: "22px 20px", borderRadius: 14, background: "var(--bg-card)", border: "0.5px solid var(--border)", display: "flex", alignItems: "center", gap: 14 }}>
                 <div style={{ width: 42, height: 42, borderRadius: 10, background: BLUE[50], display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   <Icon size={18} style={{ color: BLUE[600] }} />
                 </div>
@@ -246,20 +448,19 @@ export default function LandingPage() {
       {/* ══════════════════════════════════
           FEATURES
       ══════════════════════════════════ */}
-      <section id="features" style={{ maxWidth: 1260, margin: "0 auto", padding: "0 40px 80px" }}>
-        <SectionHeading
+      <section id="features" style={{ position: "relative", zIndex: 1, maxWidth: 1260, margin: "0 auto", padding: "0 40px 80px" }}>
+        <div className="anim"><SectionHeading
           eyebrow="Platform Features"
           title="Everything Your HR Team Needs"
           sub="A comprehensive suite of HR tools designed to streamline your workforce operations from day one."
-        />
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14 }}>
-          {features.map(f => {
+        /></div>
+        <div className="landing-3col" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14 }}>
+          {features.map((f, fi) => {
             const Icon = f.icon;
             return (
               <div key={f.title}
-                style={{ padding: "24px 22px", borderRadius: 14, background: "var(--bg-card)", border: "0.5px solid var(--border)", transition: "transform 0.2s, border-color 0.2s", cursor: "default" }}
-                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = "translateY(-3px)"; (e.currentTarget as HTMLDivElement).style.borderColor = BLUE[300]; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLDivElement).style.borderColor = "var(--border)"; }}
+                className={`anim anim-d${(fi % 3) + 1} hover-lift`}
+                style={{ padding: "24px 22px", borderRadius: 14, background: "var(--bg-card)", border: "0.5px solid var(--border)", cursor: "default" }}
               >
                 <div style={{ width: 44, height: 44, borderRadius: 11, background: f.accentBg, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
                   <Icon size={20} style={{ color: f.accentColor }} />
@@ -275,18 +476,18 @@ export default function LandingPage() {
       {/* ══════════════════════════════════
           HOW IT WORKS
       ══════════════════════════════════ */}
-      <section id="how" style={{ maxWidth: 1260, margin: "0 auto", padding: "0 40px 80px" }}>
-        <SectionHeading
+      <section id="how" style={{ position: "relative", zIndex: 1, maxWidth: 1260, margin: "0 auto", padding: "0 40px 80px" }}>
+        <div className="anim"><SectionHeading
           eyebrow="How it works"
           title="Up and Running in Minutes"
           sub="Getting started with NeraAdmin is simple. Follow four steps and your HR operations are live."
           center
-        />
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, position: "relative" }}>
+        /></div>
+        <div className="landing-steps" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, position: "relative" }}>
           {/* Connector line */}
           <div style={{ position: "absolute", top: 28, left: "12.5%", right: "12.5%", height: "0.5px", background: `linear-gradient(to right, ${BLUE[200]}, ${BLUE[400]}, ${BLUE[200]})`, zIndex: 0 }} />
           {steps.map((step, i) => (
-            <div key={step.num} style={{ padding: "24px 20px", borderRadius: 14, background: "var(--bg-card)", border: "0.5px solid var(--border)", position: "relative", zIndex: 1, textAlign: "center" }}>
+            <div key={step.num} className={`anim anim-d${i + 1} hover-lift`} style={{ padding: "24px 20px", borderRadius: 14, background: "var(--bg-card)", border: "0.5px solid var(--border)", position: "relative", zIndex: 1, textAlign: "center" }}>
               <div style={{ width: 44, height: 44, borderRadius: "50%", background: i === 0 ? BLUE[600] : BLUE[50], border: i === 0 ? "none" : `0.5px solid ${BLUE[200]}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
                 <span style={{ fontSize: 13, fontWeight: 700, color: i === 0 ? "#fff" : BLUE[600] }}>{step.num}</span>
               </div>
@@ -300,14 +501,13 @@ export default function LandingPage() {
       {/* ══════════════════════════════════
           TEAM
       ══════════════════════════════════ */}
-      <section id="team" style={{ maxWidth: 1260, margin: "0 auto", padding: "0 40px 80px" }}>
-        <SectionHeading eyebrow="Our Team" title="The People Behind NeraAdmin" sub="A dedicated team of HR, finance, and engineering professionals building the future of workforce management." />
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(6,1fr)", gap: 14 }}>
-          {teamMembers.map(member => (
+      <section id="team" style={{ position: "relative", zIndex: 1, maxWidth: 1260, margin: "0 auto", padding: "0 40px 80px" }}>
+        <div className="anim"><SectionHeading eyebrow="Our Team" title="The People Behind NeraAdmin" sub="A dedicated team of HR, finance, and engineering professionals building the future of workforce management." /></div>
+        <div className="landing-6col" style={{ display: "grid", gridTemplateColumns: "repeat(6,1fr)", gap: 14 }}>
+          {teamMembers.map((member, mi) => (
             <div key={member.name}
-              style={{ borderRadius: 14, overflow: "hidden", background: "var(--bg-card)", border: "0.5px solid var(--border)", transition: "transform 0.2s, border-color 0.2s" }}
-              onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = "translateY(-3px)"; (e.currentTarget as HTMLDivElement).style.borderColor = BLUE[300]; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLDivElement).style.borderColor = "var(--border)"; }}
+              className={`anim anim-d${(mi % 6) + 1} hover-lift`}
+              style={{ borderRadius: 14, overflow: "hidden", background: "var(--bg-card)", border: "0.5px solid var(--border)" }}
             >
               <div style={{ height: 160, overflow: "hidden" }}>
                 <img src={member.img} alt={member.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top", transition: "transform 0.4s" }}
@@ -328,11 +528,11 @@ export default function LandingPage() {
       {/* ══════════════════════════════════
           TESTIMONIALS
       ══════════════════════════════════ */}
-      <section id="testimonials" style={{ maxWidth: 1260, margin: "0 auto", padding: "0 40px 80px" }}>
-        <SectionHeading eyebrow="Testimonials" title="What Our Users Say" sub="Hear from the HR professionals and business leaders who rely on NeraAdmin every day." center />
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14 }}>
-          {testimonials.map(t => (
-            <div key={t.name} style={{ padding: "24px 22px", borderRadius: 14, background: "var(--bg-card)", border: "0.5px solid var(--border)", display: "flex", flexDirection: "column", gap: 0 }}>
+      <section id="testimonials" style={{ position: "relative", zIndex: 1, maxWidth: 1260, margin: "0 auto", padding: "0 40px 80px" }}>
+        <div className="anim"><SectionHeading eyebrow="Testimonials" title="What Our Users Say" sub="Hear from the HR professionals and business leaders who rely on NeraAdmin every day." center /></div>
+        <div className="landing-3col" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14 }}>
+          {testimonials.map((t, ti) => (
+            <div key={t.name} className={`anim anim-scale anim-d${ti + 1}`} style={{ padding: "24px 22px", borderRadius: 14, background: "var(--bg-card)", border: "0.5px solid var(--border)", display: "flex", flexDirection: "column", gap: 0 }}>
               <Quote size={20} style={{ color: BLUE[300], marginBottom: 14 }} />
               <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.75, margin: "0 0 20px", flex: 1 }}>"{t.text}"</p>
               <div style={{ display: "flex", gap: 2, marginBottom: 14 }}>
@@ -353,8 +553,8 @@ export default function LandingPage() {
       {/* ══════════════════════════════════
           WHY CHOOSE — full-bleed blue
       ══════════════════════════════════ */}
-      <section style={{ maxWidth: 1260, margin: "0 auto", padding: "0 40px 80px" }}>
-        <div style={{ borderRadius: 20, background: BLUE[600], position: "relative", overflow: "hidden", display: "grid", gridTemplateColumns: "1fr 1fr", minHeight: 360 }}>
+      <section style={{ position: "relative", zIndex: 1, maxWidth: 1260, margin: "0 auto", padding: "0 40px 80px" }}>
+        <div className="anim landing-why" style={{ borderRadius: 20, background: BLUE[600], position: "relative", overflow: "hidden", display: "grid", gridTemplateColumns: "1fr 1fr", minHeight: 360 }}>
           {/* Decorative orbs */}
           <div style={{ position: "absolute", top: -80, right: -80, width: 300, height: 300, borderRadius: "50%", background: "rgba(255,255,255,0.06)", pointerEvents: "none" }} />
           <div style={{ position: "absolute", bottom: -100, left: -50, width: 350, height: 350, borderRadius: "50%", background: "rgba(255,255,255,0.04)", pointerEvents: "none" }} />
@@ -370,7 +570,7 @@ export default function LandingPage() {
             <p style={{ fontSize: 14, color: "rgba(255,255,255,0.7)", lineHeight: 1.8, margin: "0 0 32px", maxWidth: 340 }}>
               Reliable, fast, and intuitive — NeraAdmin scales with your business from your first hire to your five-hundredth.
             </p>
-            <Link href="/register" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 22px", borderRadius: 9, fontSize: 13, fontWeight: 600, color: BLUE[600], textDecoration: "none", background: "#fff" }}>
+            <Link href="/onboarding" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 22px", borderRadius: 9, fontSize: 13, fontWeight: 600, color: BLUE[600], textDecoration: "none", background: "#fff" }}>
               Get started free <ArrowRight size={13} />
             </Link>
           </div>
@@ -392,8 +592,8 @@ export default function LandingPage() {
       {/* ══════════════════════════════════
           CTA BANNER
       ══════════════════════════════════ */}
-      <section style={{ maxWidth: 1260, margin: "0 auto", padding: "0 40px 80px", textAlign: "center" }}>
-        <div style={{ padding: "64px 40px", borderRadius: 20, background: "var(--bg-card)", border: "0.5px solid var(--border)" }}>
+      <section style={{ position: "relative", zIndex: 1, maxWidth: 1260, margin: "0 auto", padding: "0 40px 80px", textAlign: "center" }}>
+        <div className="anim anim-scale" style={{ padding: "64px 40px", borderRadius: 20, background: "var(--bg-card)", border: "0.5px solid var(--border)" }}>
           <p style={{ fontSize: 11, fontWeight: 600, color: BLUE[600], letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 12px" }}>
             Ready to start?
           </p>
@@ -404,8 +604,8 @@ export default function LandingPage() {
             Join hundreds of businesses already using NeraAdmin to manage their workforce smarter, faster, and with less friction.
           </p>
           <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
-            <Link href="/register" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "13px 28px", borderRadius: 10, fontSize: 14, fontWeight: 600, color: "#fff", textDecoration: "none", background: BLUE[600] }}>
-              Create your account <ArrowRight size={14} />
+            <Link href="/onboarding" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "13px 28px", borderRadius: 10, fontSize: 14, fontWeight: 600, color: "#fff", textDecoration: "none", background: BLUE[600] }}>
+              Get started <ArrowRight size={14} />
             </Link>
             <Link href="/login" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "13px 28px", borderRadius: 10, fontSize: 14, fontWeight: 500, color: "var(--text-primary)", textDecoration: "none", background: "transparent", border: "0.5px solid var(--border)" }}>
               Sign in
@@ -417,16 +617,19 @@ export default function LandingPage() {
       {/* ══════════════════════════════════
           FOOTER
       ══════════════════════════════════ */}
-      <footer style={{ borderTop: "0.5px solid var(--border)", padding: "0 40px 0", maxWidth: 1260, margin: "0 auto" }}>
+      <footer style={{ position: "relative", zIndex: 1, borderTop: "0.5px solid var(--border)", padding: "0 40px 0", maxWidth: 1260, margin: "0 auto" }}>
         {/* Top footer */}
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", gap: 40, padding: "48px 0 40px", borderBottom: "0.5px solid var(--border)" }}>
+        <div className="landing-footer-grid" style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", gap: 40, padding: "48px 0 40px", borderBottom: "0.5px solid var(--border)" }}>
           {/* Brand */}
           <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 14 }}>
-              <div style={{ width: 30, height: 30, borderRadius: 8, background: BLUE[600], display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <span style={{ color: "#fff", fontWeight: 700, fontSize: 12 }}>N</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 14 }}>
+              <div style={{ width: 36, height: 36, borderRadius: 10, background: `linear-gradient(145deg, ${BLUE[900]}, ${BLUE[600]})`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: `0 2px 10px rgba(30,58,138,0.30)` }}>
+                <Users size={16} color="#fff" strokeWidth={2.2} />
               </div>
-              <span style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>NeraAdmin</span>
+              <div style={{ display: "flex", flexDirection: "column", gap: 0, lineHeight: 1 }}>
+                <span style={{ fontSize: 12, fontWeight: 800, color: "var(--text-primary)", letterSpacing: 2, textTransform: "uppercase" }}>Nera</span>
+                <span style={{ fontSize: 8, fontWeight: 600, color: "var(--text-muted)", letterSpacing: 3, textTransform: "uppercase", marginTop: 2 }}>Admin</span>
+              </div>
             </div>
             <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.75, maxWidth: 280, margin: "0 0 18px" }}>
               A complete HR management system for modern teams. Employee records, payroll, leave, recruitment, and more.

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect, useState, useMemo } from "react";
 import {
@@ -178,8 +178,8 @@ export default function FinancePaymentsPage() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 14 }}>
           {[
             { icon: Banknote,      label: "Total Disbursed",   value: `$${totalDisbursed.toLocaleString()}`,          sub: "processed payrolls",          iconBg: BLUE[100],  iconColor: BLUE[600]  },
-            { icon: Users,         label: "Processed Records", value: String(totalProcessed),                         sub: `of ${payrolls.length} total`,  iconBg: "#dcfce7",  iconColor: "#15803d"  },
-            { icon: CreditCard,    label: "Avg. Net Pay",      value: `$${Math.round(avgNet).toLocaleString()}`,       sub: "per employee",                 iconBg: "#f3e8ff",  iconColor: "#7c3aed"  },
+            { icon: Users,         label: "Processed Records", value: String(totalProcessed),                         sub: `of ${payrolls.length} total`,  iconBg: "#eff6ff",  iconColor: "#1d4ed8"  },
+            { icon: CreditCard,    label: "Avg. Net Pay",      value: `$${Math.round(avgNet).toLocaleString()}`,       sub: "per employee",                 iconBg: "#eff6ff",  iconColor: "#2563eb"  },
             { icon: AlertTriangle, label: "Missing Bank Info", value: String(totalMissing),                           sub: "accounts not on file",         iconBg: "#fef9c3",  iconColor: "#b45309"  },
           ].map(s => (
             <div key={s.label} style={{ ...cardBase, padding: "20px", display: "flex", gap: 14, alignItems: "flex-start" }}>
@@ -266,8 +266,8 @@ export default function FinancePaymentsPage() {
                         {/* Period */}
                         <td style={{ padding: "14px 14px" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <div style={{ width: 34, height: 34, borderRadius: 9, background: isFullyProcessed ? "#dcfce7" : "var(--accent-light)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                              <Banknote size={14} style={{ color: isFullyProcessed ? "#15803d" : "var(--accent)" }} />
+                            <div style={{ width: 34, height: 34, borderRadius: 9, background: isFullyProcessed ? "#eff6ff" : "var(--accent-light)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                              <Banknote size={14} style={{ color: isFullyProcessed ? "#1d4ed8" : "var(--accent)" }} />
                             </div>
                             <div>
                               <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>{run.period}</p>
@@ -318,8 +318,8 @@ export default function FinancePaymentsPage() {
                               disabled={exporting === run.period || run.processed === 0}
                               style={{
                                 display: "flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 7,
-                                background: exported === run.period ? "#dcfce7" : "var(--accent)",
-                                color: exported === run.period ? "#15803d" : "#fff",
+                                background: exported === run.period ? "#eff6ff" : "var(--accent)",
+                                color: exported === run.period ? "#1d4ed8" : "#fff",
                                 border: "none", fontSize: 11, fontWeight: 600, cursor: "pointer",
                                 opacity: (exporting === run.period || run.processed === 0) ? 0.55 : 1,
                               }}

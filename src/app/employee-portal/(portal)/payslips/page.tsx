@@ -1,6 +1,7 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { Wallet, TrendingUp, TrendingDown, DollarSign, Download } from "lucide-react";
 
 const BLUE = {
@@ -12,7 +13,7 @@ const STATUS_CONFIG: Record<string, { bg: string; color: string }> = {
   Paid:       { bg: BLUE[100], color: BLUE[700] },
   Approved:   { bg: BLUE[100], color: BLUE[700] },
   Pending:    { bg: BLUE[50],  color: BLUE[500] },
-  Processed:  { bg: "#dcfce7", color: "#15803d" },
+  Processed:  { bg: "#eff6ff", color: "#1d4ed8" },
   Processing: { bg: "#fef9c3", color: "#854d0e" },
   Rejected:   { bg: "#fee2e2", color: "#b91c1c" },
 };
@@ -30,14 +31,14 @@ interface Employee {
   payrolls: Payroll[];
 }
 
-function generatePayslipHTML(p: Payroll, emp: Employee): string {
+function generatePayslipHTML(p: Payroll, emp: Employee, companyName: string): string {
   return `<html><head><title>Payslip ${p.period}</title>
 <style>body{font-family:sans-serif;margin:40px;color:#1e293b}h2{color:#2563eb}
 table{width:100%;border-collapse:collapse;margin-top:20px}
 td,th{padding:10px 14px;border-bottom:1px solid #e2e8f0;text-align:left}
 th{background:#eff6ff;font-size:12px;text-transform:uppercase;color:#64748b}
 .net{font-size:18px;font-weight:700;color:#2563eb}.hdr{display:flex;justify-content:space-between}</style></head>
-<body><div class="hdr"><div><h2>NeraAdmin HR</h2><p>Payslip for <strong>${p.period}</strong></p></div>
+<body><div class="hdr"><div><h2>${companyName} HR</h2><p>Payslip for <strong>${p.period}</strong></p></div>
 <div style="text-align:right"><p><strong>${emp.firstName} ${emp.lastName}</strong></p>
 <p>ID: ${emp.employeeId}</p><p>${emp.department ?? ""}${emp.position ? " · " + emp.position : ""}</p></div></div>
 <table><tr><th>Component</th><th>Amount</th></tr>
@@ -51,13 +52,25 @@ th{background:#eff6ff;font-size:12px;text-transform:uppercase;color:#64748b}
 }
 
 export default function PayslipsPage() {
-  const [emp,      setEmp]      = useState<Employee | null>(null);
-  const [loading,  setLoading]  = useState(true);
-  const [selected, setSelected] = useState<string | null>(null);
+  const pathname = usePathname();
+  const [emp,         setEmp]         = useState<Employee | null>(null);
+  const [loading,     setLoading]     = useState(true);
+  const [selected,    setSelected]    = useState<string | null>(null);
+  const [companyName, setCompanyName] = useState("Company");
+
+  useEffect(() => {
+    const parts = pathname.split("/").filter(Boolean);
+    const slug = parts.length >= 2 && parts[1] === "employee" ? parts[0] : "";
+    if (!slug) return;
+    fetch(`/api/company/info?slug=${encodeURIComponent(slug)}`)
+      .then(r => r.json())
+      .then(d => { if (d.company?.name) setCompanyName(d.company.name); })
+      .catch(() => {});
+  }, [pathname]);
 
   const downloadPayslip = (p: Payroll) => {
     if (!emp) return;
-    const html = generatePayslipHTML(p, emp);
+    const html = generatePayslipHTML(p, emp, companyName);
     const blob = new Blob([html], { type: "text/html" });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement("a");

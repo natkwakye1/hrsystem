@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { Plus, X, Loader2, CheckCircle2, Inbox } from "lucide-react";
@@ -25,7 +25,7 @@ const REQUEST_TYPES = ["Salary Advance", "Loan", "Payroll Correction", "Document
 
 const STATUS_COLOR: Record<string, { bg: string; color: string }> = {
   Pending:  { bg: BLUE[50],  color: BLUE[500] },
-  Approved: { bg: "#dcfce7", color: "#15803d" },
+  Approved: { bg: "#eff6ff", color: "#1d4ed8" },
   Rejected: { bg: "#fee2e2", color: "#b91c1c" },
 };
 

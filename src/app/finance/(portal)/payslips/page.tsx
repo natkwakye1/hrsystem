@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
+import { usePathname } from "next/navigation";
 import { FileText, Download, Search, Filter, ChevronLeft, ChevronRight } from "lucide-react";
 
 const PAGE_SIZE = 15;
 
 const BLUE = {
-  900: "#1e3a8a", 700: "#1d4ed8", 600: "#2563eb",
-  500: "#3b82f6", 200: "#bfdbfe", 100: "#dbeafe", 50: "#eff6ff",
+  900: "#1e3a8a", 700: "#1d4ed8", 600: "#2563eb", 500: "#3b82f6",
+  400: "#60a5fa", 200: "#bfdbfe", 100: "#dbeafe", 50: "#eff6ff",
 };
 
 const cardBase: React.CSSProperties = {
@@ -35,7 +36,7 @@ const STATUS_COLOR: Record<string, { bg: string; color: string }> = {
   Approved:   { bg: BLUE[100], color: BLUE[700] },
 };
 
-function generatePayslipHTML(p: Payroll): string {
+function generatePayslipHTML(p: Payroll, companyName: string): string {
   return `
 <html><head><title>Payslip - ${p.employee.firstName} ${p.employee.lastName}</title>
 <style>
@@ -47,7 +48,7 @@ function generatePayslipHTML(p: Payroll): string {
   .header { display: flex; justify-content: space-between; }
 </style></head><body>
 <div class="header">
-  <div><h2>NeraAdmin HR</h2><p>Payslip for ${p.period}</p></div>
+  <div><h2>${companyName} HR</h2><p>Payslip for ${p.period}</p></div>
   <div style="text-align:right"><p><strong>${p.employee.firstName} ${p.employee.lastName}</strong></p>
   <p>ID: ${p.employee.employeeId}</p><p>${p.employee.department || ""}</p></div>
 </div>
@@ -64,12 +65,24 @@ function generatePayslipHTML(p: Payroll): string {
 }
 
 export default function FinancePayslipsPage() {
-  const [payrolls, setPayrolls] = useState<Payroll[]>([]);
-  const [loading,  setLoading]  = useState(true);
-  const [search,   setSearch]   = useState("");
-  const [period,   setPeriod]   = useState("");
-  const [status,   setStatus]   = useState("");
-  const [page,     setPage]     = useState(1);
+  const pathname = usePathname();
+  const [payrolls,    setPayrolls]    = useState<Payroll[]>([]);
+  const [loading,     setLoading]     = useState(true);
+  const [search,      setSearch]      = useState("");
+  const [period,      setPeriod]      = useState("");
+  const [status,      setStatus]      = useState("");
+  const [page,        setPage]        = useState(1);
+  const [companyName, setCompanyName] = useState("Company");
+
+  useEffect(() => {
+    const parts = pathname.split("/").filter(Boolean);
+    const slug = parts.length >= 2 && parts[1] === "finance" ? parts[0] : "";
+    if (!slug) return;
+    fetch(`/api/company/info?slug=${encodeURIComponent(slug)}`)
+      .then(r => r.json())
+      .then(d => { if (d.company?.name) setCompanyName(d.company.name); })
+      .catch(() => {});
+  }, [pathname]);
 
   const load = (p = period, s = status) => {
     const q = new URLSearchParams();
@@ -84,7 +97,7 @@ export default function FinancePayslipsPage() {
   useEffect(() => { load(); }, []);
 
   const downloadPayslip = (p: Payroll) => {
-    const html = generatePayslipHTML(p);
+    const html = generatePayslipHTML(p, companyName);
     const blob = new Blob([html], { type: "text/html" });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement("a");

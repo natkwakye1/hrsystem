@@ -51,40 +51,43 @@ export default function FinanceLoginPage() {
         style={{
           width: 520, flexDirection: "column", justifyContent: "space-between",
           position: "relative", overflow: "hidden", display: "none",
-          background: "linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 50%, #2563eb 100%)",
         }}
       >
-        <div style={{ position: "absolute", top: -80,    left: -80,  width: 300, height: 300, borderRadius: "50%", background: "rgba(255,255,255,0.08)" }} />
-        <div style={{ position: "absolute", bottom: -120, right: -60, width: 400, height: 400, borderRadius: "50%", background: "rgba(255,255,255,0.05)" }} />
-        <div style={{ position: "absolute", top: "40%",  right: -40,  width: 200, height: 200, borderRadius: "50%", background: "rgba(255,255,255,0.04)" }} />
+        {/* Background image */}
+        <img
+          src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1200&q=80&fit=crop"
+          alt=""
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }}
+        />
+        {/* Overlay */}
+        <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.38)" }} />
 
         <div style={{ position: "relative", zIndex: 10, padding: "48px 40px 24px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ color: "#fff", fontWeight: 700, fontSize: 18 }}>N</span>
+            <div style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.18)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.22)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ color: "#fff", fontWeight: 800, fontSize: 18 }}>N</span>
             </div>
             <span style={{ color: "#fff", fontWeight: 700, fontSize: 20, letterSpacing: -0.5 }}>NeraAdmin</span>
           </div>
         </div>
 
         <div style={{ position: "relative", zIndex: 10, padding: "0 40px 24px", flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          <h1 style={{ color: "#fff", fontSize: 34, fontWeight: 700, lineHeight: 1.2, marginBottom: 18 }}>
+          <h1 style={{ color: "#fff", fontSize: 36, fontWeight: 800, lineHeight: 1.2, marginBottom: 18, letterSpacing: -1 }}>
             Finance<br />Management<br />Portal
           </h1>
-          <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 15, lineHeight: 1.7, maxWidth: 380 }}>
-            Manage payroll runs, monitor department budget utilization, and
-            generate financial reports for your entire organization.
+          <p style={{ color: "rgba(255,255,255,0.72)", fontSize: 15, lineHeight: 1.8, maxWidth: 360 }}>
+            Process payroll runs, monitor budgets, and generate financial reports for your entire organization.
           </p>
         </div>
 
         <div style={{ position: "relative", zIndex: 10, padding: "0 40px 40px" }}>
-          <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
+          <div style={{ display: "flex", gap: 0, alignItems: "center", background: "rgba(255,255,255,0.1)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 14, padding: "18px 20px" }}>
             {[{ val: "Payroll", label: "Management" }, { val: "Budgets", label: "Tracking" }, { val: "Reports", label: "Analytics" }].map((s, i) => (
-              <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 24 }}>
-                {i > 0 && <div style={{ width: 1, height: 40, backgroundColor: "rgba(255,255,255,0.2)" }} />}
-                <div style={{ textAlign: "center" }}>
-                  <p style={{ color: "#fff", fontWeight: 700, fontSize: 18, margin: 0 }}>{s.val}</p>
-                  <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 12, margin: "4px 0 0" }}>{s.label}</p>
+              <div key={s.label} style={{ display: "flex", alignItems: "center", flex: 1 }}>
+                {i > 0 && <div style={{ width: 1, height: 36, backgroundColor: "rgba(255,255,255,0.2)", marginRight: 20 }} />}
+                <div style={{ textAlign: "center", flex: 1 }}>
+                  <p style={{ color: "#fff", fontWeight: 800, fontSize: 16, margin: 0, letterSpacing: -0.3 }}>{s.val}</p>
+                  <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 11, margin: "3px 0 0", fontWeight: 500 }}>{s.label}</p>
                 </div>
               </div>
             ))}
@@ -161,10 +164,15 @@ export default function FinanceLoginPage() {
             </form>
 
             <p style={{ marginTop: 20, textAlign: "center", fontSize: 13, color: "var(--text-secondary)" }}>
-              Admin?{" "}
-              <a href="/login" style={{ fontWeight: 600, color: "var(--accent)", textDecoration: "none" }}>Admin Portal</a>
+              Don&apos;t have an account?{" "}
+              <a href="/finance/register" style={{ fontWeight: 600, color: "var(--accent)", textDecoration: "none" }}>Create one</a>
+            </p>
+            <p style={{ marginTop: 8, textAlign: "center", fontSize: 12, color: "var(--text-muted)" }}>
+              <a href="/login" style={{ color: "var(--text-muted)", textDecoration: "none" }}>Admin Portal</a>
               {" · "}
-              <a href="/employee-portal/login" style={{ fontWeight: 600, color: "var(--accent)", textDecoration: "none" }}>Employee Portal</a>
+              <a href="/employee-portal/login" style={{ color: "var(--text-muted)", textDecoration: "none" }}>Employee Portal</a>
+              {" · "}
+              <a href="/get-started" style={{ color: "var(--text-muted)", textDecoration: "none" }}>Choose portal</a>
             </p>
           </div>
 

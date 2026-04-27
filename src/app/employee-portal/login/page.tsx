@@ -51,40 +51,43 @@ export default function EmployeeLoginPage() {
         style={{
           width: 520, flexDirection: "column", justifyContent: "space-between",
           position: "relative", overflow: "hidden", display: "none",
-          background: "linear-gradient(135deg, #60a5fa 0%, #2563eb 50%, #1d4ed8 100%)",
         }}
       >
-        <div style={{ position: "absolute", top: -80,   left: -80,  width: 300, height: 300, borderRadius: "50%", background: "rgba(255,255,255,0.1)"  }} />
-        <div style={{ position: "absolute", bottom: -120, right: -60, width: 400, height: 400, borderRadius: "50%", background: "rgba(255,255,255,0.06)" }} />
-        <div style={{ position: "absolute", top: "40%", right: -40,  width: 200, height: 200, borderRadius: "50%", background: "rgba(255,255,255,0.05)" }} />
+        {/* Background image */}
+        <img
+          src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1200&q=80&fit=crop"
+          alt=""
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }}
+        />
+        {/* Overlay */}
+        <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.38)" }} />
 
         <div style={{ position: "relative", zIndex: 10, padding: "48px 40px 24px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ color: "#fff", fontWeight: 700, fontSize: 18 }}>N</span>
+            <div style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.18)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.22)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ color: "#fff", fontWeight: 800, fontSize: 18 }}>N</span>
             </div>
             <span style={{ color: "#fff", fontWeight: 700, fontSize: 20, letterSpacing: -0.5 }}>NeraAdmin</span>
           </div>
         </div>
 
         <div style={{ position: "relative", zIndex: 10, padding: "0 40px 24px", flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          <h1 style={{ color: "#fff", fontSize: 34, fontWeight: 700, lineHeight: 1.2, marginBottom: 18 }}>
+          <h1 style={{ color: "#fff", fontSize: 36, fontWeight: 800, lineHeight: 1.2, marginBottom: 18, letterSpacing: -1 }}>
             Employee<br />Self-Service<br />Portal
           </h1>
-          <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 15, lineHeight: 1.7, maxWidth: 380 }}>
-            Access your payslips, manage leave requests, review your benefits,
-            and keep your personal information up to date — all in one place.
+          <p style={{ color: "rgba(255,255,255,0.72)", fontSize: 15, lineHeight: 1.8, maxWidth: 360 }}>
+            Access your payslips, manage leave requests, review benefits, and keep your information up to date — all in one place.
           </p>
         </div>
 
         <div style={{ position: "relative", zIndex: 10, padding: "0 40px 40px" }}>
-          <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
+          <div style={{ display: "flex", gap: 0, alignItems: "center", background: "rgba(255,255,255,0.1)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 14, padding: "18px 20px" }}>
             {[{ val: "Leave", label: "Requests" }, { val: "Pay", label: "Slips" }, { val: "Benefits", label: "Overview" }].map((s, i) => (
-              <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 24 }}>
-                {i > 0 && <div style={{ width: 1, height: 40, backgroundColor: "rgba(255,255,255,0.2)" }} />}
-                <div style={{ textAlign: "center" }}>
-                  <p style={{ color: "#fff", fontWeight: 700, fontSize: 18, margin: 0 }}>{s.val}</p>
-                  <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 12, margin: "4px 0 0" }}>{s.label}</p>
+              <div key={s.label} style={{ display: "flex", alignItems: "center", flex: 1 }}>
+                {i > 0 && <div style={{ width: 1, height: 36, backgroundColor: "rgba(255,255,255,0.2)", marginRight: 20 }} />}
+                <div style={{ textAlign: "center", flex: 1 }}>
+                  <p style={{ color: "#fff", fontWeight: 800, fontSize: 16, margin: 0, letterSpacing: -0.3 }}>{s.val}</p>
+                  <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 11, margin: "3px 0 0", fontWeight: 500 }}>{s.label}</p>
                 </div>
               </div>
             ))}
@@ -158,10 +161,15 @@ export default function EmployeeLoginPage() {
             </form>
 
             <p style={{ marginTop: 20, textAlign: "center", fontSize: 13, color: "var(--text-secondary)" }}>
-              Admin?{" "}
-              <a href="/login" style={{ fontWeight: 600, color: "var(--accent)", textDecoration: "none" }}>Admin Portal</a>
+              New employee?{" "}
+              <a href="/employee-portal/register" style={{ fontWeight: 600, color: "var(--accent)", textDecoration: "none" }}>Create account</a>
+            </p>
+            <p style={{ marginTop: 8, textAlign: "center", fontSize: 12, color: "var(--text-muted)" }}>
+              <a href="/login" style={{ color: "var(--text-muted)", textDecoration: "none" }}>Admin Portal</a>
               {" · "}
-              <a href="/finance/login" style={{ fontWeight: 600, color: "var(--accent)", textDecoration: "none" }}>Finance Portal</a>
+              <a href="/finance/login" style={{ color: "var(--text-muted)", textDecoration: "none" }}>Finance Portal</a>
+              {" · "}
+              <a href="/get-started" style={{ color: "var(--text-muted)", textDecoration: "none" }}>Choose portal</a>
             </p>
           </div>
 

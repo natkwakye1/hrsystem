@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import {
@@ -44,7 +44,7 @@ const COMPANY_DOCS = [
 
 const DOC_TYPE_COLOR: Record<string, { bg: string; color: string }> = {
   Policy:   { bg: "var(--accent-light)", color: "var(--accent)"  },
-  Benefits: { bg: "#f0fdf4",             color: "#16a34a"         },
+  Benefits: { bg: "#eff6ff",             color: "#2563eb"         },
   Finance:  { bg: "#fefce8",             color: "#ca8a04"         },
   HR:       { bg: "#fdf4ff",             color: "#9333ea"         },
 };
@@ -276,7 +276,7 @@ export default function ProfilePage() {
                           </div>
                         </div>
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                          <span style={{ padding: "2px 8px", borderRadius: 999, fontSize: 10, fontWeight: 600, background: d.status === "Approved" ? "#dcfce7" : "var(--bg-card)", color: d.status === "Approved" ? "#15803d" : "var(--text-muted)", border: "0.5px solid var(--border)" }}>{d.status}</span>
+                          <span style={{ padding: "2px 8px", borderRadius: 999, fontSize: 10, fontWeight: 600, background: d.status === "Approved" ? "#eff6ff" : "var(--bg-card)", color: d.status === "Approved" ? "#1d4ed8" : "var(--text-muted)", border: "0.5px solid var(--border)" }}>{d.status}</span>
                           <button style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 9px", borderRadius: 5, background: "var(--accent-light)", color: "var(--accent)", border: "none", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
                             <Download size={10} />
                           </button>

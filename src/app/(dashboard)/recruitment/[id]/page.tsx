@@ -29,9 +29,9 @@ const STAGE_COLOR: Record<string, { bg: string; color: string }> = {
   Applied:   { bg: BLUE[50],   color: BLUE[500]  },
   Screened:  { bg: BLUE[100],  color: BLUE[700]  },
   Interview: { bg: "#fef9c3",  color: "#a16207"  },
-  Offered:   { bg: "#d1fae5",  color: "#065f46"  },
+  Offered:   { bg: BLUE[100],  color: BLUE[700]  },
   Rejected:  { bg: "#fee2e2",  color: "#b91c1c"  },
-  Hired:     { bg: "#dcfce7",  color: "#15803d"  },
+  Hired:     { bg: BLUE[50],   color: BLUE[600]  },
 };
 
 interface Job {
@@ -45,8 +45,8 @@ interface Applicant {
 
 function ScoreBadge({ score }: { score?: number }) {
   if (score == null) return null;
-  const color = score >= 75 ? "#15803d" : score >= 50 ? "#a16207" : "#b91c1c";
-  const bg    = score >= 75 ? "#dcfce7" : score >= 50 ? "#fef9c3" : "#fee2e2";
+  const color = score >= 75 ? BLUE[600] : score >= 50 ? "#a16207" : "#b91c1c";
+  const bg    = score >= 75 ? BLUE[50]  : score >= 50 ? "#fef9c3" : "#fee2e2";
   return (
     <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 8px", borderRadius: 999, fontSize: 11, fontWeight: 700, background: bg, color }}>
       <Star size={9} /> {score.toFixed(0)}%

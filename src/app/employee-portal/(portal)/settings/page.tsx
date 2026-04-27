@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { Lock, User, CheckCircle2, Loader2 } from "lucide-react";
@@ -122,7 +122,7 @@ export default function SettingsPage() {
             <div style={{ padding: "10px 14px", borderRadius: 8, background: "var(--danger-light)", border: "1px solid rgba(239,68,68,0.2)", marginBottom: 16, fontSize: 12, color: "var(--danger)" }}>{error}</div>
           )}
           {saved && (
-            <div style={{ padding: "10px 14px", borderRadius: 8, background: "#f0fdf4", border: "1px solid #86efac", marginBottom: 16, fontSize: 12, color: "#16a34a", display: "flex", alignItems: "center", gap: 6 }}>
+            <div style={{ padding: "10px 14px", borderRadius: 8, background: "#eff6ff", border: "1px solid #93c5fd", marginBottom: 16, fontSize: 12, color: "#2563eb", display: "flex", alignItems: "center", gap: 6 }}>
               <CheckCircle2 size={13} /> Password updated successfully
             </div>
           )}

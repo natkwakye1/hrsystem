@@ -4,7 +4,42 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
+}
+
+model Company {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  emailDomain String?
+  industry    String?
+  size        Int      @default(1)
+  plan        String   @default("free")
+  logoUrl     String?
+  website     String?
+  phone       String?
+  address     String?
+  isOnboarded Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  users       User[]
+  employees   Employee[]
+  permissions CompanyPermissions?
+  departments Department[]
+}
+
+model CompanyPermissions {
+  id               String  @id @default(cuid())
+  companyId        String  @unique
+  employeeLeave    Boolean @default(true)
+  employeePayslips Boolean @default(true)
+  employeeProfile  Boolean @default(true)
+  employeeRequests Boolean @default(true)
+  employeeBenefits Boolean @default(true)
+  financePayroll   Boolean @default(true)
+  financeBudgets   Boolean @default(true)
+  financeReports   Boolean @default(true)
+  company          Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 }
 
 model User {
@@ -14,8 +49,10 @@ model User {
   name      String
   role      String   @default("admin")
   avatar    String?
+  companyId String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  company   Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
 }
 
 model Employee {
@@ -41,8 +78,11 @@ model Employee {
   status          String           @default("Active")
   hireDate        String           @default("")
   salary          Float            @default(0)
+  companyId       String?
+  tempPassword    String?
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
+  company             Company?          @relation(fields: [companyId], references: [id], onDelete: SetNull)
   bankAccounts        BankAccount[]
   contacts            Contact[]
   documents           Document[]
@@ -100,11 +140,13 @@ model Document {
 
 model Department {
   id          String   @id @default(cuid())
-  name        String   @unique
+  name        String
   description String?
   managerId   String?
+  companyId   String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  company     Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
 }
 
 model LeaveRequest {

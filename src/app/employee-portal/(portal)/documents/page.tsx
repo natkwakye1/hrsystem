@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { FileText, Download, Upload, FolderOpen } from "lucide-react";
@@ -18,7 +18,7 @@ const COMPANY_DOCS = [
 
 const TYPE_COLOR: Record<string, { bg: string; color: string }> = {
   Policy:   { bg: "#eff6ff", color: "#2563eb" },
-  Benefits: { bg: "#f0fdf4", color: "#16a34a" },
+  Benefits: { bg: "#eff6ff", color: "#2563eb" },
   Finance:  { bg: "#fefce8", color: "#ca8a04" },
   HR:       { bg: "#fdf4ff", color: "#9333ea" },
 };
@@ -125,7 +125,7 @@ export default function DocumentsPage() {
                     <td style={{ padding: "11px 16px", fontWeight: 600, color: "var(--text-primary)" }}>{d.title}</td>
                     <td style={{ padding: "11px 16px", color: "var(--text-secondary)" }}>{d.type}</td>
                     <td style={{ padding: "11px 16px" }}>
-                      <span style={{ padding: "2px 8px", borderRadius: 999, fontSize: 11, fontWeight: 600, background: d.status === "Approved" ? "#dcfce7" : "var(--bg-body)", color: d.status === "Approved" ? "#15803d" : "var(--text-muted)" }}>{d.status}</span>
+                      <span style={{ padding: "2px 8px", borderRadius: 999, fontSize: 11, fontWeight: 600, background: d.status === "Approved" ? "#eff6ff" : "var(--bg-body)", color: d.status === "Approved" ? "#1d4ed8" : "var(--text-muted)" }}>{d.status}</span>
                     </td>
                     <td style={{ padding: "11px 16px", color: "var(--text-muted)", fontSize: 11 }}>{new Date(d.createdAt).toLocaleDateString()}</td>
                     <td style={{ padding: "11px 16px" }}>

@@ -7,45 +7,66 @@ import { BarChart3, Wallet, PieChart, FileText, TrendingUp, LogOut, Menu, X, Che
 
 interface FinSession { name: string; email: string; }
 
-const NAV = [
-  { href: "/finance",              label: "Overview",    icon: BarChart3    },
-  { href: "/finance/payroll",      label: "Payroll",     icon: Wallet       },
-  { href: "/finance/payslips",     label: "Payslips",    icon: Receipt      },
-  { href: "/finance/payments",     label: "Payments",    icon: CreditCard   },
-  { href: "/finance/deductions",   label: "Deductions",  icon: MinusCircle  },
-  { href: "/finance/budgets",      label: "Budgets",     icon: PieChart     },
-  { href: "/finance/reports",      label: "Reports",     icon: FileText     },
-  { href: "/finance/audit",        label: "Audit Log",   icon: Shield       },
+const NAV_ITEMS = [
+  { sub: "",            label: "Overview",    icon: BarChart3    },
+  { sub: "/payroll",    label: "Payroll",     icon: Wallet       },
+  { sub: "/payslips",   label: "Payslips",    icon: Receipt      },
+  { sub: "/payments",   label: "Payments",    icon: CreditCard   },
+  { sub: "/deductions", label: "Deductions",  icon: MinusCircle  },
+  { sub: "/budgets",    label: "Budgets",     icon: PieChart     },
+  { sub: "/reports",    label: "Reports",     icon: FileText     },
+  { sub: "/audit",      label: "Audit Log",   icon: Shield       },
 ];
+
+function extractFinanceSlug(pathname: string): string {
+  const parts = pathname.split("/").filter(Boolean);
+  if (parts.length >= 2 && parts[1] === "finance") return parts[0];
+  return "";
+}
 
 export default function FinancePortalLayout({ children }: { children: React.ReactNode }) {
   const router   = useRouter();
   const pathname = usePathname();
-  const [session, setSession] = useState<FinSession | null>(null);
-  const [open,    setOpen]    = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [theme,   setTheme]   = useState<"light" | "dark">("light");
+  const [session,     setSession]     = useState<FinSession | null>(null);
+  const [open,        setOpen]        = useState(false);
+  const [loading,     setLoading]     = useState(true);
+  const [theme,       setTheme]       = useState<"light" | "dark">("light");
+  const [companyName, setCompanyName] = useState("");
+
+  const companySlug = extractFinanceSlug(pathname);
+  const finBase     = companySlug ? `/${companySlug}/finance` : "/finance";
+  const loginPath   = companySlug ? `/${companySlug}/login`   : "/finance/login";
+
+  const NAV = NAV_ITEMS.map(item => ({ ...item, href: `${finBase}${item.sub}` }));
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
   }, [theme]);
 
   useEffect(() => {
+    if (!companySlug) return;
+    fetch(`/api/company/info?slug=${encodeURIComponent(companySlug)}`)
+      .then(r => r.json())
+      .then(d => { if (d.company?.name) setCompanyName(d.company.name); })
+      .catch(() => {});
+  }, [companySlug]);
+
+  useEffect(() => {
     fetch("/api/portal/finance/me")
       .then(r => {
-        if (r.status === 401) { router.replace("/finance/login"); return null; }
+        if (r.status === 401) { router.replace(loginPath); return null; }
         return r.json();
       })
       .then(d => {
         if (d) setSession({ name: d.user.name, email: d.user.email });
         setLoading(false);
       })
-      .catch(() => router.replace("/finance/login"));
-  }, [router]);
+      .catch(() => router.replace(loginPath));
+  }, [router, loginPath]);
 
   const handleLogout = async () => {
     await fetch("/api/portal/finance/logout", { method: "POST" });
-    router.replace("/finance/login");
+    router.replace(loginPath);
   };
 
   if (loading) return (
@@ -66,7 +87,7 @@ export default function FinancePortalLayout({ children }: { children: React.Reac
             <TrendingUp size={15} color="#fff" />
           </div>
           <div>
-            <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "var(--text-primary)", letterSpacing: -0.3, lineHeight: 1.2 }}>NeraAdmin</p>
+            <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "var(--text-primary)", letterSpacing: -0.3, lineHeight: 1.2 }}>{companyName || companySlug || "Company"}</p>
             <p style={{ margin: 0, fontSize: 9.5, fontWeight: 500, color: "var(--text-muted)" }}>Finance Portal</p>
           </div>
         </div>
@@ -94,7 +115,7 @@ export default function FinancePortalLayout({ children }: { children: React.Reac
         <p style={{ fontSize: 9.5, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.09em", textTransform: "uppercase", padding: "10px 16px 4px", margin: 0 }}>Navigation</p>
         {NAV.map(item => {
           const Icon    = item.icon;
-          const isExact = item.href === "/finance";
+          const isExact = item.sub === "";
           const active  = isExact ? pathname === item.href : pathname.startsWith(item.href);
           return (
             <Link
@@ -153,8 +174,9 @@ export default function FinancePortalLayout({ children }: { children: React.Reac
         .fin-main, .fin-main * { font-family: 'DM Sans', sans-serif !important; }
         .fin-nav-link:hover:not(.fin-nav-active) { background: var(--bg-hover) !important; color: var(--text-primary) !important; }
         .fin-nav-link.fin-nav-active { background: var(--accent) !important; color: #fff !important; }
-        @keyframes slideIn { from { transform: translateX(-100%); } to { transform: translateX(0); } }
         @keyframes spin { to { transform: rotate(360deg); } }
+        .fin-mobile-sidebar { display: none; }
+        @media(max-width: 1023px) { .fin-mobile-sidebar { display: block !important; } }
       `}</style>
 
       <div style={{ display: "flex", minHeight: "100vh", background: "var(--bg-body)" }}>
@@ -166,14 +188,27 @@ export default function FinancePortalLayout({ children }: { children: React.Reac
         </div>
 
         {/* Mobile overlay */}
-        {open && (
-          <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex" }} onClick={() => setOpen(false)}>
-            <div style={{ width: 240, height: "100%", animation: "slideIn 0.22s ease", flexShrink: 0 }} onClick={e => e.stopPropagation()}>
-              <SidebarInner />
-            </div>
-            <div style={{ flex: 1, background: "rgba(0,0,0,0.35)" }} />
-          </div>
-        )}
+        <div
+          onClick={() => setOpen(false)}
+          style={{
+            position: "fixed", inset: 0, zIndex: 50,
+            background: "rgba(0,0,0,0.4)", backdropFilter: "blur(1px)",
+            opacity: open ? 1 : 0,
+            pointerEvents: open ? "auto" : "none",
+            transition: "opacity 0.28s cubic-bezier(.4,0,.2,1)",
+          }}
+        />
+        <div
+          onClick={e => e.stopPropagation()}
+          style={{
+            position: "fixed", left: 0, top: 0, height: "100%", zIndex: 51,
+            transform: open ? "translateX(0)" : "translateX(-100%)",
+            transition: "transform 0.28s cubic-bezier(.4,0,.2,1)",
+          }}
+          className="fin-mobile-sidebar"
+        >
+          <SidebarInner />
+        </div>
 
         {/* Page content */}
         <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
@@ -193,7 +228,7 @@ export default function FinancePortalLayout({ children }: { children: React.Reac
               <div style={{ width: 24, height: 24, borderRadius: 6, background: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <TrendingUp size={13} color="#fff" />
               </div>
-              <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>Finance Portal</span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>{companyName || "Finance Portal"}</span>
             </div>
             <div style={{ flex: 1 }} />
             <button

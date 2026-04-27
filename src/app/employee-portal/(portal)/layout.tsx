@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
@@ -33,32 +33,48 @@ function getAvatar(firstName: string, lastName: string): string {
 
 interface EmpSession { name: string; email: string; firstName?: string; lastName?: string; }
 interface Notif { id: string; title: string; message: string; type: string; isRead: boolean; createdAt: string; }
+interface Permissions {
+  employeeLeave: boolean; employeePayslips: boolean;
+  employeeProfile: boolean; employeeRequests: boolean; employeeBenefits: boolean;
+}
 
-const NAV = [
-  { href: "/employee-portal",          label: "Dashboard",      icon: LayoutDashboard },
-  { href: "/employee-portal/leave",    label: "Leave Requests", icon: CalendarDays    },
-  { href: "/employee-portal/payslips", label: "Pay Slips",      icon: Wallet          },
-  { href: "/employee-portal/benefits", label: "Benefits",       icon: Heart           },
-  { href: "/employee-portal/requests", label: "My Requests",    icon: Inbox           },
-  { href: "/employee-portal/profile",  label: "My Profile",     icon: UserCircle      },
-  { href: "/employee-portal/settings", label: "Settings",       icon: Settings        },
+const ALL_NAV_ITEMS = [
+  { sub: "",          label: "Dashboard",      icon: LayoutDashboard, permKey: null               },
+  { sub: "/leave",    label: "Leave Requests", icon: CalendarDays,    permKey: "employeeLeave"    },
+  { sub: "/payslips", label: "Pay Slips",      icon: Wallet,          permKey: "employeePayslips" },
+  { sub: "/benefits", label: "Benefits",       icon: Heart,           permKey: "employeeBenefits" },
+  { sub: "/requests", label: "My Requests",    icon: Inbox,           permKey: "employeeRequests" },
+  { sub: "/profile",  label: "My Profile",     icon: UserCircle,      permKey: "employeeProfile"  },
+  { sub: "/settings", label: "Settings",       icon: Settings,        permKey: null               },
 ];
+
+function extractEmpSlug(pathname: string): string {
+  const parts = pathname.split("/").filter(Boolean);
+  if (parts.length >= 2 && parts[1] === "employee") return parts[0];
+  return "";
+}
 
 export default function EmployeePortalLayout({ children }: { children: React.ReactNode }) {
   const router   = useRouter();
   const pathname = usePathname();
-  const [session,    setSession]    = useState<EmpSession | null>(null);
-  const [open,       setOpen]       = useState(false);
-  const [loading,    setLoading]    = useState(true);
-  const [theme,      setTheme]      = useState<"light" | "dark">("light");
-  const [notifs,     setNotifs]     = useState<Notif[]>([]);
-  const [notifOpen,  setNotifOpen]  = useState(false);
+  const [session,     setSession]     = useState<EmpSession | null>(null);
+  const [permissions, setPermissions] = useState<Permissions | null>(null);
+  const [open,        setOpen]        = useState(false);
+  const [loading,     setLoading]     = useState(true);
+  const [theme,       setTheme]       = useState<"light" | "dark">("light");
+  const [notifs,      setNotifs]      = useState<Notif[]>([]);
+  const [notifOpen,   setNotifOpen]   = useState(false);
+  const [companyName, setCompanyName] = useState("");
   const notifRef = useRef<HTMLDivElement>(null);
+
+  const companySlug = extractEmpSlug(pathname);
+  const empBase     = companySlug ? `/${companySlug}/employee` : "/employee-portal";
+  const loginPath   = companySlug ? `/${companySlug}/login`    : "/employee-portal/login";
 
   useEffect(() => {
     fetch("/api/portal/employee/me")
       .then(r => {
-        if (r.status === 401) { router.replace("/employee-portal/login"); return null; }
+        if (r.status === 401) { router.replace(loginPath); return null; }
         return r.json();
       })
       .then(d => {
@@ -68,8 +84,33 @@ export default function EmployeePortalLayout({ children }: { children: React.Rea
         });
         setLoading(false);
       })
-      .catch(() => router.replace("/employee-portal/login"));
-  }, [router]);
+      .catch(() => router.replace(loginPath));
+  }, [router, loginPath]);
+
+  // Fetch company name
+  useEffect(() => {
+    if (!companySlug) return;
+    fetch(`/api/company/info?slug=${encodeURIComponent(companySlug)}`)
+      .then(r => r.json())
+      .then(d => { if (d.company?.name) setCompanyName(d.company.name); })
+      .catch(() => {});
+  }, [companySlug]);
+
+  // Fetch company permissions
+  useEffect(() => {
+    fetch("/api/company/permissions/public")
+      .then(r => r.json())
+      .then(d => setPermissions(d.permissions ?? null))
+      .catch(() => {});
+  }, []);
+
+  // Build nav with company-scoped hrefs, filtered by permissions
+  const NAV = ALL_NAV_ITEMS
+    .filter(item => {
+      if (!item.permKey || !permissions) return true;
+      return permissions[item.permKey as keyof Permissions] !== false;
+    })
+    .map(item => ({ ...item, href: `${empBase}${item.sub}` }));
 
   // fetch notifications
   useEffect(() => {
@@ -102,7 +143,7 @@ export default function EmployeePortalLayout({ children }: { children: React.Rea
 
   const handleLogout = async () => {
     await fetch("/api/portal/employee/logout", { method: "POST" });
-    router.replace("/employee-portal/login");
+    router.replace(loginPath);
   };
 
   const markAllRead = async () => {
@@ -127,7 +168,7 @@ export default function EmployeePortalLayout({ children }: { children: React.Rea
   const unread = notifs.filter(n => !n.isRead).length;
 
   const typeColor = (type: string) => {
-    if (type === "success") return "#15803d";
+    if (type === "success") return "#1d4ed8";
     if (type === "warning") return "#d97706";
     if (type === "error")   return "var(--danger)";
     return "var(--accent)";
@@ -139,10 +180,10 @@ export default function EmployeePortalLayout({ children }: { children: React.Rea
       <div style={{ height: 62, padding: "0 16px", display: "flex", alignItems: "center", borderBottom: "1px solid var(--border)", flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
           <div style={{ width: 32, height: 32, borderRadius: 9, background: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <span style={{ color: "#fff", fontWeight: 800, fontSize: 13 }}>N</span>
+            <span style={{ color: "#fff", fontWeight: 800, fontSize: 13 }}>{companyName.charAt(0).toUpperCase() || "N"}</span>
           </div>
           <div>
-            <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "var(--text-primary)", letterSpacing: -0.3, lineHeight: 1.2 }}>NeraAdmin</p>
+            <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "var(--text-primary)", letterSpacing: -0.3, lineHeight: 1.2 }}>{companyName || companySlug || "Company"}</p>
             <p style={{ margin: 0, fontSize: 9.5, fontWeight: 500, color: "var(--text-muted)" }}>Employee Portal</p>
           </div>
         </div>
@@ -168,7 +209,7 @@ export default function EmployeePortalLayout({ children }: { children: React.Rea
         <p style={{ fontSize: 9.5, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.09em", textTransform: "uppercase", padding: "10px 16px 4px", margin: 0 }}>Menu</p>
         {NAV.map(item => {
           const Icon    = item.icon;
-          const isExact = item.href === "/employee-portal";
+          const isExact = item.sub === "";
           const active  = isExact ? pathname === item.href : pathname.startsWith(item.href);
           return (
             <Link
@@ -227,8 +268,9 @@ export default function EmployeePortalLayout({ children }: { children: React.Rea
         .ep-main, .ep-main * { font-family: 'DM Sans', sans-serif !important; }
         .ep-nav-link:hover:not(.ep-nav-active) { background: var(--bg-hover) !important; color: var(--text-primary) !important; }
         .ep-nav-link.ep-nav-active { background: var(--accent) !important; color: #fff !important; }
-        @keyframes slideIn { from { transform: translateX(-100%); } to { transform: translateX(0); } }
         @keyframes spin { to { transform: rotate(360deg); } }
+        .ep-mobile-sidebar { display: none; }
+        @media(max-width: 1023px) { .ep-mobile-sidebar { display: block !important; } }
         @keyframes notifDrop { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
       `}</style>
 
@@ -241,14 +283,27 @@ export default function EmployeePortalLayout({ children }: { children: React.Rea
         </div>
 
         {/* Mobile overlay */}
-        {open && (
-          <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex" }} onClick={() => setOpen(false)}>
-            <div style={{ width: 240, height: "100%", animation: "slideIn 0.22s ease", flexShrink: 0 }} onClick={e => e.stopPropagation()}>
-              <SidebarInner />
-            </div>
-            <div style={{ flex: 1, background: "rgba(0,0,0,0.35)" }} />
-          </div>
-        )}
+        <div
+          onClick={() => setOpen(false)}
+          style={{
+            position: "fixed", inset: 0, zIndex: 50,
+            background: "rgba(0,0,0,0.4)", backdropFilter: "blur(1px)",
+            opacity: open ? 1 : 0,
+            pointerEvents: open ? "auto" : "none",
+            transition: "opacity 0.28s cubic-bezier(.4,0,.2,1)",
+          }}
+        />
+        <div
+          onClick={e => e.stopPropagation()}
+          style={{
+            position: "fixed", left: 0, top: 0, height: "100%", zIndex: 51,
+            transform: open ? "translateX(0)" : "translateX(-100%)",
+            transition: "transform 0.28s cubic-bezier(.4,0,.2,1)",
+          }}
+          className="ep-mobile-sidebar"
+        >
+          <SidebarInner />
+        </div>
 
         {/* Page content */}
         <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
@@ -266,9 +321,9 @@ export default function EmployeePortalLayout({ children }: { children: React.Rea
             </button>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }} className="ep-brand-header">
               <div style={{ width: 24, height: 24, borderRadius: 6, background: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <span style={{ color: "#fff", fontWeight: 700, fontSize: 12 }}>N</span>
+                <span style={{ color: "#fff", fontWeight: 700, fontSize: 12 }}>{companyName.charAt(0).toUpperCase() || "N"}</span>
               </div>
-              <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>Employee Portal</span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>{companyName || "Employee Portal"}</span>
             </div>
             <div style={{ flex: 1 }} />
 
